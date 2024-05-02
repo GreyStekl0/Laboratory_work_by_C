@@ -87,6 +87,15 @@ void initialize_process(Process *process, int id, int priority, int hours, int m
     process->open_resources = open_resources;
 }
 
+void print_processes(Process *processes, int current_size) {
+    for (int i = 0; i < current_size; i++) {
+        printf("Process id: %d, Priority: %d, Creation time: %d:%d:%d, Available memory: %d, Occupied memory: %d, Open resources: %d\n",
+               processes[i].id, processes[i].priority, processes[i].creation_time.hours,
+               processes[i].creation_time.minutes, processes[i].creation_time.seconds,
+               processes[i].available_memory, processes[i].occupied_memory, processes[i].open_resources);
+    }
+}
+
 int main(void) {
     Process processes[4];
 
@@ -96,9 +105,9 @@ int main(void) {
     initialize_process(&processes[2], 2, 3, 1, 20, 30, 2000, 1200, 5);
     initialize_process(&processes[3], 3, 7, 3, 45, 20, 1500, 700, 4);
 
-    int n = sizeof(processes) / sizeof(Process);
+    int current_size = sizeof(processes) / sizeof(Process);
 
-    printf("Total occupied memory: %d\n", total_occupied_memory(processes, n));
+    printf("Total occupied memory: %d\n", total_occupied_memory(processes, current_size));
 
     int id;
     int result;
@@ -108,27 +117,15 @@ int main(void) {
         while (getchar() != '\n');
     } while (result == 0);
 
-    find_by_id(processes, n, id);
+    find_by_id(processes, current_size, id);
 
-    qsort(processes, n, sizeof(Process), compare_priority);
+    qsort(processes, current_size, sizeof(Process), compare_priority);
     printf("Processes sorted by priority:\n");
-    int i;
-    for (i = 0; i < n; i++) {
-        printf("Process id: %d, Priority: %d, Creation time: %d:%d:%d, Available memory: %d, Occupied memory: %d, Open resources: %d\n",
-               processes[i].id, processes[i].priority, processes[i].creation_time.hours,
-               processes[i].creation_time.minutes, processes[i].creation_time.seconds,
-               processes[i].available_memory, processes[i].occupied_memory, processes[i].open_resources);
-    }
+    print_processes(processes, current_size);
 
-    qsort(processes, n, sizeof(Process), compare_creation_time);
+    qsort(processes, current_size, sizeof(Process), compare_creation_time);
     printf("Processes sorted by creation time:\n");
-    int j;
-    for (j = 0; j < n; j++) {
-        printf("Process id: %d, Priority: %d, Creation time: %d:%d:%d, Available memory: %d, Occupied memory: %d, Open resources: %d\n",
-               processes[j].id, processes[j].priority, processes[j].creation_time.hours,
-               processes[j].creation_time.minutes, processes[j].creation_time.seconds,
-               processes[j].available_memory, processes[j].occupied_memory, processes[j].open_resources);
-    }
+    print_processes(processes, current_size);
 
     return 0;
 }

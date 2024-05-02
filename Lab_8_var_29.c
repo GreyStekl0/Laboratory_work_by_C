@@ -212,22 +212,12 @@ int main(void) {
             case 7:
                 qsort(processes, current_size, sizeof(Process), compare_priority);
                 printf("Processes sorted by priority:\n");
-                for (int i = 0; i < current_size; i++) {
-                    printf("Process id: %d, Priority: %d, Creation time: %d:%d:%d, Available memory: %d, Occupied memory: %d, Open resources: %d\n",
-                           processes[i].id, processes[i].priority, processes[i].creation_time.hours,
-                           processes[i].creation_time.minutes, processes[i].creation_time.seconds,
-                           processes[i].available_memory, processes[i].occupied_memory, processes[i].open_resources);
-                }
+                display_processes(processes, current_size);
                 break;
             case 8:
                 qsort(processes, current_size, sizeof(Process), compare_creation_time);
                 printf("Processes sorted by creation time:\n");
-                for (int j = 0; j < current_size; j++) {
-                    printf("Process id: %d, Priority: %d, Creation time: %d:%d:%d, Available memory: %d, Occupied memory: %d, Open resources: %d\n",
-                           processes[j].id, processes[j].priority, processes[j].creation_time.hours,
-                           processes[j].creation_time.minutes, processes[j].creation_time.seconds,
-                           processes[j].available_memory, processes[j].occupied_memory, processes[j].open_resources);
-                }
+                display_processes(processes, current_size);
                 break;
             case 0:
                 printf("Exiting the program.\n");
