@@ -88,7 +88,8 @@ void initialize_process(Process *process, int id, int priority, int hours, int m
 }
 
 void print_processes(Process *processes, int current_size) {
-    for (int i = 0; i < current_size; i++) {
+    int i;
+    for (i = 0; i < current_size; i++) {
         printf("Process id: %d, Priority: %d, Creation time: %d:%d:%d, Available memory: %d, Occupied memory: %d, Open resources: %d\n",
                processes[i].id, processes[i].priority, processes[i].creation_time.hours,
                processes[i].creation_time.minutes, processes[i].creation_time.seconds,

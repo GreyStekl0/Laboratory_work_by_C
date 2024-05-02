@@ -68,7 +68,8 @@ int input_number(const char *message, int min, int max) {
 
 void display_processes(Process *processes, int n) {
     printf("Current processes:\n");
-    for (int i = 0; i < n; i++) {
+    int i;
+    for (i = 0; i < n; i++) {
         printf("Process id: %d, Priority: %d, Creation time: %d:%d:%d, Available memory: %d, Occupied memory: %d, Open resources: %d\n",
                processes[i].id, processes[i].priority, processes[i].creation_time.hours,
                processes[i].creation_time.minutes, processes[i].creation_time.seconds,
@@ -77,7 +78,8 @@ void display_processes(Process *processes, int n) {
 }
 
 bool is_unique_id(Process *processes, int current_size, int id) {
-    for (int i = 0; i < current_size; i++) {
+    int i;
+    for (i = 0; i < current_size; i++) {
         if (processes[i].id == id) {
             return false;
         }
@@ -124,7 +126,8 @@ void delete_process(Process *processes, int *current_size, int id) {
         }
     }
     if (i != *current_size) {
-        for (int j = i; j < *current_size - 1; j++) {
+        int j;
+        for (j = i; j < *current_size - 1; j++) {
             processes[j] = processes[j + 1];
         }
         (*current_size)--;
@@ -138,7 +141,8 @@ void update_process(Process *processes, int current_size) {
     printf("Enter the id of the process you want to update: ");
     int id_to_update;
     scanf("%d", &id_to_update);
-    for (int i = 0; i < current_size; i++) {
+    int i;
+    for (i = 0; i < current_size; i++) {
         if (processes[i].id == id_to_update) {
             printf("Process with id %d found. Enter new values.\n", id_to_update);
             input_process(&processes[i], processes, current_size, false);
