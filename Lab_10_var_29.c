@@ -31,14 +31,18 @@ int compare_creation_time(const void *a, const void *b) {
     return timeA - timeB;
 }
 
+void display_process(Process *process){
+    printf("Process id: %d, Priority: %d, Creation time: %d:%d:%d, Available memory: %d, Occupied memory: %d, Open resources: %d\n",
+           process->id, process->priority, process->creation_time.hours,
+           process->creation_time.minutes, process->creation_time.seconds,
+           process->available_memory, process->occupied_memory, process->open_resources);
+}
+
 Process *find_by_id(Process *processes, int n, int id) {
     int i = 0;
     for (i; i < n; i++) {
         if (processes[i].id == id) {
-            printf("Found process with id %d. Priority: %d, Creation time: %d:%d:%d, Available memory: %d, Occupied memory: %d, Open resources: %d\n",
-                   processes[i].id, processes[i].priority, processes[i].creation_time.hours,
-                   processes[i].creation_time.minutes, processes[i].creation_time.seconds,
-                   processes[i].available_memory, processes[i].occupied_memory, processes[i].open_resources);
+            display_process(&processes[i]);
             return &processes[i];
         }
     }
@@ -70,10 +74,7 @@ void display_processes(Process *processes, int n) {
     printf("Current processes:\n");
     int i;
     for (i = 0; i < n; i++) {
-        printf("Process id: %d, Priority: %d, Creation time: %d:%d:%d, Available memory: %d, Occupied memory: %d, Open resources: %d\n",
-               processes[i].id, processes[i].priority, processes[i].creation_time.hours,
-               processes[i].creation_time.minutes, processes[i].creation_time.seconds,
-               processes[i].available_memory, processes[i].occupied_memory, processes[i].open_resources);
+        display_process(&processes[i]);
     }
 }
 
@@ -144,19 +145,23 @@ void delete_process(Process *processes, int *current_size, int id) {
     }
 }
 
-void update_process(Process *processes, int current_size) {
-    printf("Enter the id of the process you want to update: ");
-    int id_to_update;
-    scanf("%d", &id_to_update);
-    int i;
-    for (i = 0; i < current_size; i++) {
-        if (processes[i].id == id_to_update) {
-            printf("Process with id %d found. Enter new values.\n", id_to_update);
-            input_process(&processes[i], processes, current_size, false);
-            return;
-        }
+void insert_process(Process *processes, int *current_size, int max_size) {
+    if (*current_size == max_size) {
+        printf("No more space for new processes.\n");
+        return;
     }
-    printf("Process with id %d not found.\n", id_to_update);
+
+    int position;
+    do {
+        position = input_number("Enter the position where you want to insert the new process (0 to n): ", 0, *current_size);
+    } while (position < 0 || position > *current_size);
+
+    for (int i = *current_size; i > position; i--) {
+        processes[i] = processes[i - 1];
+    }
+
+    input_process(&processes[position], processes, *current_size, true);
+    (*current_size)++;
 }
 
 void load_processes_from_file(const char *filename, Process **processes, int *current_size, int *max_size) {
@@ -200,7 +205,7 @@ int main(void) {
         printf("1. Load processes from file\n");
         printf("2. Input process\n");
         printf("3. Delete process by id\n");
-        printf("4. Update process by id\n");
+        printf("4. Process insertion\n");
         printf("5. Display processes\n");
         printf("6. Display total occupied memory\n");
         printf("7. Find process by id\n");
@@ -240,7 +245,7 @@ int main(void) {
                 }
                 break;
             case 4:
-                update_process(processes, current_size);
+                insert_process(processes, &current_size, max_size);
                 display_processes(processes, current_size);
                 break;
             case 5:
@@ -280,7 +285,7 @@ int main(void) {
                 printf("Exiting the program.\n");
                 break;
             default:
-                printf("Invalid choice. Please enter a number between 0 and 5.\n");
+                printf("Invalid choice. Please enter a number between 0 and 11.\n");
         }
     } while (choice != 0);
     free(processes);

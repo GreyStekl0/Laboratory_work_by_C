@@ -76,7 +76,9 @@ void input_process(Process *process) {
     process->open_resources = input_number("Enter process open resources: ", 0, INT_MAX);
 }
 
-void initialize_process(Process *process, int id, int priority, int hours, int minutes, int seconds, int available_memory, int occupied_memory, int open_resources) {
+void
+initialize_process(Process *process, int id, int priority, int hours, int minutes, int seconds, int available_memory,
+                   int occupied_memory, int open_resources) {
     process->id = id;
     process->priority = priority;
     process->creation_time.hours = hours;

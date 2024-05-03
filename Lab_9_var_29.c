@@ -32,17 +32,12 @@ int compare_creation_time(const void *a, const void *b) {
 }
 
 Process *find_by_id(Process *processes, int n, int id) {
-    int i;
-    for (i = 0; i < n; i++) {
+    int i = 0;
+    for (i; i < n; i++) {
         if (processes[i].id == id) {
-            printf("Found process with id %d. Priority: %d, Creation time: %d:%d:%d, Available memory: %d, Occupied memory: %d, Open resources: %d\n",
-                   processes[i].id, processes[i].priority, processes[i].creation_time.hours,
-                   processes[i].creation_time.minutes, processes[i].creation_time.seconds,
-                   processes[i].available_memory, processes[i].occupied_memory, processes[i].open_resources);
             return &processes[i];
         }
     }
-    printf("Process with id %d not found.\n", id);
     return NULL;
 }
 
@@ -66,14 +61,18 @@ int input_number(const char *message, int min, int max) {
     return value;
 }
 
+void display_process(Process *process){
+    printf("Process id: %d, Priority: %d, Creation time: %d:%d:%d, Available memory: %d, Occupied memory: %d, Open resources: %d\n",
+           process->id, process->priority, process->creation_time.hours,
+           process->creation_time.minutes, process->creation_time.seconds,
+           process->available_memory, process->occupied_memory, process->open_resources);
+}
+
 void display_processes(Process *processes, int n) {
     printf("Current processes:\n");
     int i;
     for (i = 0; i < n; i++) {
-        printf("Process id: %d, Priority: %d, Creation time: %d:%d:%d, Available memory: %d, Occupied memory: %d, Open resources: %d\n",
-               processes[i].id, processes[i].priority, processes[i].creation_time.hours,
-               processes[i].creation_time.minutes, processes[i].creation_time.seconds,
-               processes[i].available_memory, processes[i].occupied_memory, processes[i].open_resources);
+        display_process(&processes[i]);
     }
 }
 
@@ -124,7 +123,7 @@ void input_process(Process *process, Process *processes, int current_size, bool 
     process->open_resources = input_number("Enter process open resources: ", 0, INT_MAX);
 }
 
-void delete_process(Process *processes, int *current_size, int id) {
+bool delete_process(Process *processes, int *current_size, int id) {
     int i;
     for (i = 0; i < *current_size; i++) {
         if (processes[i].id == id) {
@@ -137,25 +136,29 @@ void delete_process(Process *processes, int *current_size, int id) {
             processes[j] = processes[j + 1];
         }
         (*current_size)--;
-        printf("Process with id %d has been deleted.\n", id);
+        return true;
     } else {
-        printf("Process with id %d not found.\n", id);
+        return false;
     }
 }
 
-void update_process(Process *processes, int current_size) {
-    printf("Enter the id of the process you want to update: ");
-    int id_to_update;
-    scanf("%d", &id_to_update);
-    int i;
-    for (i = 0; i < current_size; i++) {
-        if (processes[i].id == id_to_update) {
-            printf("Process with id %d found. Enter new values.\n", id_to_update);
-            input_process(&processes[i], processes, current_size, false);
-            return;
-        }
+void insert_process(Process *processes, int *current_size, int max_size) {
+    if (*current_size == max_size) {
+        printf("No more space for new processes.\n");
+        return;
     }
-    printf("Process with id %d not found.\n", id_to_update);
+
+    int position;
+    do {
+        position = input_number("Enter the position where you want to insert the new process (0 to n): ", 0, *current_size);
+    } while (position < 0 || position > *current_size);
+
+    for (int i = *current_size; i > position; i--) {
+        processes[i] = processes[i - 1];
+    }
+
+    input_process(&processes[position], processes, *current_size, true);
+    (*current_size)++;
 }
 
 void load_processes_from_file(const char *filename, Process *processes, int *current_size) {
@@ -176,7 +179,7 @@ void load_processes_from_file(const char *filename, Process *processes, int *cur
     printf("File %s has been successfully read.\n", filename);
 }
 
-void reset_processes(Process *processes, int *current_size) {
+void reset_processes(int *current_size) {
     *current_size = 0;
     printf("All processes have been reset.\n");
 }
@@ -195,7 +198,7 @@ int main(void) {
         printf("1. Load processes from file\n");
         printf("2. Input process\n");
         printf("3. Delete process by id\n");
-        printf("4. Update process by id\n");
+        printf("4. Process insertion\n");
         printf("5. Display processes\n");
         printf("6. Display total occupied memory\n");
         printf("7. Find process by id\n");
@@ -227,11 +230,16 @@ int main(void) {
                 printf("Enter the id of the process you want to delete: ");
                 int id_to_delete;
                 scanf("%d", &id_to_delete);
-                delete_process(processes, &current_size, id_to_delete);
+                bool is_deleted = delete_process(processes, &current_size, id_to_delete);
+                if (is_deleted) {
+                    printf("Process with id %d has been deleted.\n", id_to_delete);
+                } else {
+                    printf("Process with id %d not found.\n", id_to_delete);
+                }
                 display_processes(processes, current_size);
                 break;
             case 4:
-                update_process(processes, current_size);
+                insert_process(processes, &current_size, max_size);
                 display_processes(processes, current_size);
                 break;
             case 5:
@@ -244,7 +252,12 @@ int main(void) {
                 printf("Enter the id of the process you want to find: ");
                 int id;
                 scanf("%d", &id);
-                find_by_id(processes, current_size, id);
+                Process *found_process = find_by_id(processes, current_size, id);
+                if (found_process != NULL) {
+                    display_process(found_process);
+                } else {
+                    printf("Process with id %d not found.\n", id);
+                }
                 break;
             case 8:
                 qsort(processes, current_size, sizeof(Process), compare_priority);
@@ -257,7 +270,7 @@ int main(void) {
                 display_processes(processes, current_size);
                 break;
             case 10:
-                reset_processes(processes, &current_size);
+                reset_processes(&current_size);
                 break;
             case 11:
                 printf("Enter the name of the file you want to save processes to: ");
@@ -269,7 +282,7 @@ int main(void) {
                 printf("Exiting the program.\n");
                 break;
             default:
-                printf("Invalid choice. Please enter a number between 0 and 5.\n");
+                printf("Invalid choice. Please enter a number between 0 and 11.\n");
         }
     } while (choice != 0);
 
