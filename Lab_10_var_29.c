@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <limits.h>
+#include <string.h>
 
 typedef struct {
     int id;
@@ -165,6 +167,12 @@ void insert_process(Process *processes, int *current_size, int max_size) {
 }
 
 void load_processes_from_file(const char *filename, Process **processes, int *current_size, int *max_size) {
+    const char *extension = strrchr(filename, '.');
+    if (!extension || strcmp(extension, ".txt") != 0) {
+        printf("Invalid file type. Please provide a .txt file.\n");
+        return;
+    }
+
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
         printf("Failed to open file %s\n", filename);
@@ -176,7 +184,7 @@ void load_processes_from_file(const char *filename, Process **processes, int *cu
                   &process.creation_time.hours, &process.creation_time.minutes, &process.creation_time.seconds,
                   &process.available_memory, &process.occupied_memory, &process.open_resources) == 8) {
         if (*current_size == *max_size) {
-            *max_size *= 2;
+            *max_size = (*max_size > 0) ? *max_size * 2 : 1;
             *processes = realloc(*processes, *max_size * sizeof(Process));
         }
         (*processes)[(*current_size)++] = process;
@@ -192,10 +200,10 @@ void reset_processes(Process *processes, int *current_size) {
 }
 
 int main(void) {
-    Process *processes = malloc(sizeof(Process));
+    Process *processes = NULL;
 
     int current_size = 0;
-    int max_size = 1;
+    int max_size = 0;
 
     int choice;
 

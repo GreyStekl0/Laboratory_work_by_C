@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+#include <limits.h>
 
 typedef struct {
     int id;
@@ -162,11 +164,18 @@ void insert_process(Process *processes, int *current_size, int max_size) {
 }
 
 void load_processes_from_file(const char *filename, Process *processes, int *current_size) {
+    const char *extension = strrchr(filename, '.');
+    if (!extension || strcmp(extension, ".txt") != 0) {
+        printf("Invalid file type. Please provide a .txt file.\n");
+        return;
+    }
+
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
         printf("Failed to open file %s\n", filename);
         return;
     }
+    *current_size = 0;
 
     Process process;
     while (fscanf(file, "%d %d %d %d %d %d %d %d", &process.id, &process.priority,
