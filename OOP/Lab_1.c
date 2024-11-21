@@ -17,8 +17,7 @@ void initList(List *list) {
     printf("List initialized.\n\n");
 }
 
-void Add(List *list) {
-    Item *newItem = malloc(sizeof(Item));
+void Add(List *list, Item *newItem) {
     newItem->next = NULL;
     newItem->prev = list->tail;
 
@@ -44,6 +43,10 @@ int count(const List *list) {
 }
 
 Item* GetItem(const List *list, int index) {
+    if (index < 0) {
+        return NULL;
+    }
+
     Item *current = list->head;
     int i = 0;
 
@@ -55,12 +58,15 @@ Item* GetItem(const List *list, int index) {
     return current;
 }
 
-int Remove(List *list, int index) {
+Item* Remove(List *list, int index) {
+    if (index < 0) {
+        return NULL;
+    }
+
     Item *current = GetItem(list, index);
 
     if (current == NULL) {
-        printf("Invalid index.\n\n");
-        return -1;
+        return NULL;
     }
 
     if (current->prev != NULL) {
@@ -75,13 +81,16 @@ int Remove(List *list, int index) {
         list->tail = current->prev;
     }
 
-    free(current);
-    return 0;
+    return current;
 }
 
 void Delete(List *list, int index) {
-    if (Remove(list, index) == 0) {
+    Item *removedItem = Remove(list, index);
+    if (removedItem != NULL) {
+        free(removedItem);
         printf("Item deleted at index %d.\n\n", index);
+    } else {
+        printf("Invalid index. No item deleted.\n\n");
     }
 }
 
@@ -113,51 +122,30 @@ void Clear(List *list) {
     printf("List cleared.\n\n");
 }
 
-void insert(List *list, int index) {
+void Insert(List *list, Item *newItem, int index) {
     if (index < 0) {
         printf("Invalid index.\n\n");
         return;
     }
 
-    Item *newItem = malloc(sizeof(Item));
-    if (newItem == NULL) {
-        printf("Memory allocation failed.\n\n");
-        return;
-    }
-
-    if (index == 0) {
-        newItem->prev = NULL;
-        newItem->next = list->head;
-        if (list->head != NULL) {
-            list->head->prev = newItem;
-        }
-        list->head = newItem;
-        if (list->tail == NULL) {
-            list->tail = newItem;
-        }
-        printf("Item inserted at index %d.\n\n", index);
-        return;
-    }
-
-    Item *current = list->head;
-    for (int i = 0; i < index - 1 && current != NULL; i++) {
-        current = current->next;
-    }
+    Item *current = GetItem(list, index);
 
     if (current == NULL) {
-        printf("Invalid index.\n\n");
-        free(newItem);
+        Add(list, newItem);
+        printf("Item added at the end as index %d was invalid.\n\n", index);
         return;
     }
 
-    newItem->next = current->next;
-    newItem->prev = current;
-    if (current->next != NULL) {
-        current->next->prev = newItem;
+    newItem->next = current;
+    newItem->prev = current->prev;
+
+    if (current->prev != NULL) {
+        current->prev->next = newItem;
     } else {
-        list->tail = newItem;
+        list->head = newItem;
     }
-    current->next = newItem;
+
+    current->prev = newItem;
     printf("Item inserted at index %d.\n\n", index);
 }
 
@@ -196,6 +184,7 @@ int main() {
     List list;
     int choice, index;
     Item *item;
+    Item *newItem;
 
     while (1) {
         displayMenu();
@@ -206,7 +195,8 @@ int main() {
             initList(&list);
             break;
         case 2:
-            Add(&list);
+            newItem = malloc(sizeof(Item));
+            Add(&list, newItem);
             break;
         case 3:
             printf("Enter index to delete: ");
@@ -219,7 +209,7 @@ int main() {
         case 5:
             printf("Enter index to remove: ");
             scanf("%d", &index);
-            if (Remove(&list, index) == 0) {
+            if (Remove(&list, index) != NULL) {
                 printf("Item successfully removed at index %d.\n\n", index);
             } else {
                 printf("Failed to remove item at index %d.\n\n", index);
@@ -231,7 +221,8 @@ int main() {
         case 7:
             printf("Enter index to insert: ");
             scanf("%d", &index);
-            insert(&list, index);
+            newItem = malloc(sizeof(Item));
+            Insert(&list, newItem, index);
             break;
         case 8:
             printf("Enter item address to get index: ");
